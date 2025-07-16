@@ -26,7 +26,7 @@ const useEchoCancellation = queryParams.get("cancelecho") !== "off";
 const cancelEchoButtonText = useEchoCancellation
   ? "Disable echo cancellation"
   : "Enable echo cancellation";
-document.getElementById("echo-cancel-button").innerHTML = cancelEchoButtonText;
+// document.getElementById("echo-cancel-button").innerHTML = cancelEchoButtonText;
 console.log("using echo cancellation? " + useEchoCancellation);
 
 function toggleEchoCancellation() {
@@ -118,10 +118,24 @@ function handleBotReply(text, audio) {
 }
 
 function playAudio(audio) {
-  const audioBlob = new Blob([audio]);
+  if (!audio) {
+    console.log("No audio data received");
+    return;
+  }
+
+  // Convert base64 to binary
+  const binaryString = atob(audio);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  const audioBlob = new Blob([bytes], { type: "audio/wav" });
   const audioUrl = URL.createObjectURL(audioBlob);
   audioObject = new Audio(audioUrl);
-  audioObject.play();
+  audioObject.play().catch((error) => {
+    console.error("Error playing audio:", error);
+  });
 }
 
 function recordingStart() {
@@ -145,5 +159,19 @@ function toggleRecording() {
     recordingStop();
   } else {
     recordingStart();
+  }
+}
+
+// Toggle examples section visibility
+function toggleExamples() {
+  const examplesContent = document.getElementById("examples-content");
+  const examplesIcon = document.getElementById("examples-icon");
+
+  if (examplesContent.classList.contains("expanded")) {
+    examplesContent.classList.remove("expanded");
+    examplesIcon.classList.remove("rotated");
+  } else {
+    examplesContent.classList.add("expanded");
+    examplesIcon.classList.add("rotated");
   }
 }

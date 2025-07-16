@@ -12,12 +12,63 @@
 
 <body>
     <div id="main">
+            <!--
         <div id="settings">
             <button id="echo-cancel-button" onclick="toggleEchoCancellation()"></button>
         </div>
-        <div class="title">
-            Ayla Demo
+            -->
+        <div class="logo-container">
+            <img src="https://mcp.turkishtechlab.com/img/logo.png" alt="Turkish Airlines Logo" class="title-logo">
         </div>
+        <div class="title">
+            MCP Server with Voice AI Agent Demo
+        </div>
+        
+        <!-- Examples Section -->
+        <div id="examples-section">
+            <div class="examples-toggle" onclick="toggleExamples()">
+                <span id="examples-icon">▼</span>
+                <span>🔧 What can you ask me?</span>
+            </div>
+            <div id="examples-content" class="examples-content">
+                <div class="examples-grid">
+                    <div class="example-category">
+                        <h4>✈️ Flight Information</h4>
+                        <ul>
+                            <li>"What's the status of flight TK1 on 2024-12-25?"</li>
+                            <li>"Show me flights from Istanbul to London tomorrow"</li>
+                            <li>"Create a booking link for flights to New York"</li>
+                            <li>"What are the current promotions for international flights?"</li>
+                        </ul>
+                    </div>
+                    <div class="example-category">
+                        <h4>🌍 Travel Planning</h4>
+                        <ul>
+                            <li>"Get me a city guide for Paris"</li>
+                            <li>"What are the baggage allowance for my booking?"</li>
+                            <li>"Help me find booking information for check-in"</li>
+                        </ul>
+                    </div>
+                    <div class="example-category">
+                        <h4>📋 Booking Management</h4>
+                        <ul>
+                            <li>"Get my booking details for PNR ABC123"</li>
+                            <li>"Show me my flight booking information"</li>
+                        </ul>
+                    </div>
+                    <div class="example-category">
+                        <h4>👤 Member Services</h4>
+                        <ul>
+                            <li>"Show me my upcoming flights"</li>
+                            <li>"What's my Miles&Smiles member information?"</li>
+                            <li>"Check my authentication status"</li>
+                            <li>"Show me my expiring miles"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="wavesurfer-container">
             <h3 style="margin-top: 16px;text-align: center;">Click the mic button and say something!</h3>
             <div id="mic"></div>
