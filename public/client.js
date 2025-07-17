@@ -3,11 +3,23 @@ const wssOrigin = "http://localhost:3000";
 
 const conversation = document.getElementById("conversation");
 const micButton = document.getElementById("mic-button");
+const content = document.getElementById("content");
+const micStatusText = document.getElementById("mic-status-text");
 
 let mediaRecorder = null;
 let mediaRecorderHasBeenStarted = false;
 let recording = false;
 let audioObject = null;
+
+/**
+ * Scrolls the conversation to the bottom to show the latest message
+ */
+function scrollToBottom() {
+  // Use requestAnimationFrame to ensure DOM updates are complete
+  requestAnimationFrame(() => {
+    content.scrollTop = content.scrollHeight;
+  });
+}
 
 /**
  * If a user utterance is in progress, this is the div within `#conversation` where that utterance
@@ -86,6 +98,8 @@ function updateOngoingUtteranceDiv() {
     ongoingUtteranceDiv = document.createElement("div");
     ongoingUtteranceDiv.className = "response";
     conversation.appendChild(ongoingUtteranceDiv);
+    // Scroll to bottom when new user utterance starts
+    scrollToBottom();
   }
 
   ongoingUtteranceDiv.innerHTML =
@@ -94,6 +108,9 @@ function updateOngoingUtteranceDiv() {
     '</span> <span class="unfinalized">' +
     unfinalizedTranscript +
     "</span>";
+
+  // Scroll to bottom as user utterance updates
+  scrollToBottom();
 }
 
 function handleUserUtteranceComplete() {
@@ -113,6 +130,9 @@ function handleBotReply(text, audio) {
   agentMessageDiv.className = "response agent-response";
   conversation.appendChild(agentMessageDiv);
   agentMessageDiv.innerHTML = text;
+
+  // Scroll to bottom when agent responds
+  scrollToBottom();
 
   playAudio(audio);
 }
@@ -145,11 +165,13 @@ function recordingStart() {
     mediaRecorderHasBeenStarted = true;
   }
   micButton.setAttribute("src", "mic_on.png");
+  micStatusText.textContent = "Listening...";
   recording = true;
 }
 
 function recordingStop() {
   micButton.setAttribute("src", "mic_off.png");
+  micStatusText.textContent = "Click the mic button and say something!";
   recording = false;
 }
 

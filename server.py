@@ -1,13 +1,11 @@
 import os
 import asyncio
 import threading
-import time
 import json
 import base64
 from datetime import datetime
 from typing import Optional, Dict, Any
 
-import socketio
 from flask import Flask
 from flask_socketio import SocketIO, emit
 import requests
@@ -17,6 +15,14 @@ from dotenv import load_dotenv
 # MCP imports
 from langchain_openai import ChatOpenAI
 from mcp_use import MCPAgent, MCPClient
+
+import mcp_use
+
+# mcp_use.set_debug(1)
+
+
+# Import prompts configuration
+from prompts import SYSTEM_PROMPT, ADDITIONAL_INSTRUCTIONS
 
 # Load environment variables
 load_dotenv()
@@ -30,6 +36,7 @@ socketio_app = SocketIO(
 
 # Initialize clients
 deepgram_client = DeepgramClient(os.getenv("DEEPGRAM_API_KEY"))
+
 
 # MCP client configuration
 mcp_config = {
@@ -62,12 +69,50 @@ latest_finalized_word_end = float("inf")
 latest_time_seen = 0.0
 model_final_output_text = ""
 
+# Memory file path
+MEMORY_FILE = "conversation_memory.json"
+
+
+def load_conversation_memory():
+    """Load conversation history from file"""
+    if os.path.exists(MEMORY_FILE):
+        try:
+            with open(MEMORY_FILE, "r") as f:
+                return json.load(f)
+        except:
+            return []
+    return []
+
+
+def save_conversation_memory(memory):
+    """Save conversation history to file"""
+    try:
+        with open(MEMORY_FILE, "w") as f:
+            json.dump(memory, f, indent=2)
+    except Exception as e:
+        print(f"Error saving memory: {e}")
+
+
+def clean_old_memories(memory, days_to_keep=7):
+    """Remove old conversation entries"""
+    cutoff_date = datetime.now() - timedelta(days=days_to_keep)
+    return [
+        entry
+        for entry in memory
+        if datetime.fromisoformat(entry.get("timestamp", "1970-01-01")) > cutoff_date
+    ]
+
+
+# Initialize memory at startup
+conversation_history = load_conversation_memory()
+
 
 def reset_to_initial_state():
     """Reset all global variables to initial state"""
     global socket_to_client, socket_to_deepgram, voicebot_state
     global finalized_transcript, unfinalized_transcript
     global latest_finalized_word_end, latest_time_seen, model_final_output_text
+    global conversation_history  # Add this line
 
     if socket_to_deepgram:
         try:
@@ -83,6 +128,7 @@ def reset_to_initial_state():
     latest_finalized_word_end = float("inf")
     latest_time_seen = 0.0
     model_final_output_text = ""
+    conversation_history = []  # Reset conversation history
 
 
 def change_voicebot_state(new_state):
@@ -107,7 +153,7 @@ def init_dg_connection():
             language="en-US",
             smart_format=True,
             interim_results=True,
-            endpointing=300,
+            endpointing=1000,
             no_delay=True,
             utterance_end_ms=1000,
         )
@@ -228,7 +274,7 @@ def handle_dg_results(start, duration, is_final, speech_final, transcript, words
 
         silence_detected = (
             unfinalized_transcript == ""
-            and latest_time_seen - latest_finalized_word_end > 1.25
+            and latest_time_seen - latest_finalized_word_end > 1.5
         )
 
         if silence_detected or speech_final:
@@ -291,8 +337,8 @@ def update_silence_detection_state(start, duration, words, is_final):
 
 
 async def mcp_generate_response(transcript):
-    """Generate response using MCP server"""
-    global model_final_output_text
+    """Generate response using MCP server with manual conversation memory"""
+    global model_final_output_text, conversation_history
     model_final_output_text = ""
 
     try:
@@ -301,18 +347,43 @@ async def mcp_generate_response(transcript):
 
         # Create LLM
         llm = ChatOpenAI(
-            model="deepseek/deepseek-chat-v3-0324:free",
-            temperature=0.6,
-            base_url="https://openrouter.ai/api/v1",
+            model="o4-mini-2025-04-16",
+            # model="gpt-4o-mini",
+            # temperature=0.6,
         )
 
-        # Create agent with the client
-        agent = MCPAgent(llm=llm, client=client, max_steps=30)
+        # Create agent with memory disabled
+        agent = MCPAgent(
+            llm=llm,
+            client=client,
+            max_steps=5,
+            memory_enabled=False,  # Disable buggy memory
+            system_prompt=SYSTEM_PROMPT,
+            additional_instructions=ADDITIONAL_INSTRUCTIONS,
+            # verbose=True,
+        )
 
-        # Run the query with user's voice transcript
-        result = await agent.run(transcript)
+        # Add conversation history to the transcript
+        context_with_history = build_context_with_history(transcript)
+
+        # Run the query with context
+        result = await agent.run(context_with_history)
 
         model_final_output_text = str(result)
+
+        # Update conversation history
+        conversation_history.append(
+            {
+                "user": transcript,
+                "assistant": model_final_output_text,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
+
+        # Keep only last 5 exchanges to prevent context from getting too long
+        if len(conversation_history) > 5:
+            conversation_history = conversation_history[-5:]
+
         print(f"\nMCP assistant-> {model_final_output_text}")
 
     except Exception as e:
@@ -320,6 +391,20 @@ async def mcp_generate_response(transcript):
         model_final_output_text = (
             "I'm sorry, I couldn't process that request through the MCP server."
         )
+
+
+def build_context_with_history(current_transcript):
+    """Build context with conversation history"""
+    if not conversation_history:
+        return current_transcript
+
+    context = "Previous conversation:\n"
+    for exchange in conversation_history[-3:]:  # Only use last 3 exchanges
+        context += f"User: {exchange['user']}\n"
+        context += f"Assistant: {exchange['assistant']}\n\n"
+
+    context += f"Current user message: {current_transcript}"
+    return context
 
 
 async def deepgram_generated_audio(text):

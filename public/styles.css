@@ -83,18 +83,46 @@ span {
   width: 100%;
   overflow-y: auto;
   height: calc(100% - 390px);
+  padding-bottom: 120px; /* Add space for the bottom mic section */
+  scroll-behavior: smooth;
 }
 
 #conversation {
   margin: 0 auto;
   max-width: 800px;
+  padding-bottom: 40px; /* Additional padding to ensure last message is fully visible */
+}
+
+/* Bottom mic section */
+.bottom-mic-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid #333333;
+  padding: 20px 0;
+  z-index: 1000;
+}
+
+.mic-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .recorder {
-  position: absolute;
-  bottom: 0px;
-  margin-left: calc(50% - 50px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.recorder:hover {
+  transform: scale(1.1);
 }
 
 #mic,

@@ -1,90 +1,102 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <script src="https://cdn.socket.io/4.5.3/socket.io.min.js"
-        integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi"
-        crossorigin="anonymous"></script>
+  <head>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script
+      src="https://cdn.socket.io/4.5.3/socket.io.min.js"
+      integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi"
+      crossorigin="anonymous"
+    ></script>
     <script src="https://unpkg.com/wavesurfer.js@7"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.min.js"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="main">
-            <!--
+      <!--
         <div id="settings">
             <button id="echo-cancel-button" onclick="toggleEchoCancellation()"></button>
         </div>
             -->
-        <div class="logo-container">
-            <img src="https://mcp.turkishtechlab.com/img/logo.png" alt="Turkish Airlines Logo" class="title-logo">
-        </div>
-        <div class="title">
-            MCP Server with Voice AI Agent Demo
-        </div>
-        
-        <!-- Examples Section -->
-        <div id="examples-section">
-            <div class="examples-toggle" onclick="toggleExamples()">
-                <span id="examples-icon">▼</span>
-                <span>🔧 What can you ask me?</span>
-            </div>
-            <div id="examples-content" class="examples-content">
-                <div class="examples-grid">
-                    <div class="example-category">
-                        <h4>✈️ Flight Information</h4>
-                        <ul>
-                            <li>"What's the status of flight TK1 on 2024-12-25?"</li>
-                            <li>"Show me flights from Istanbul to London tomorrow"</li>
-                            <li>"Create a booking link for flights to New York"</li>
-                            <li>"What are the current promotions for international flights?"</li>
-                        </ul>
-                    </div>
-                    <div class="example-category">
-                        <h4>🌍 Travel Planning</h4>
-                        <ul>
-                            <li>"Get me a city guide for Paris"</li>
-                            <li>"What are the baggage allowance for my booking?"</li>
-                            <li>"Help me find booking information for check-in"</li>
-                        </ul>
-                    </div>
-                    <div class="example-category">
-                        <h4>📋 Booking Management</h4>
-                        <ul>
-                            <li>"Get my booking details for PNR ABC123"</li>
-                            <li>"Show me my flight booking information"</li>
-                        </ul>
-                    </div>
-                    <div class="example-category">
-                        <h4>👤 Member Services</h4>
-                        <ul>
-                            <li>"Show me my upcoming flights"</li>
-                            <li>"What's my Miles&Smiles member information?"</li>
-                            <li>"Check my authentication status"</li>
-                            <li>"Show me my expiring miles"</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div class="logo-container">
+        <img
+          src="https://mcp.turkishtechlab.com/img/logo.png"
+          alt="Turkish Airlines Logo"
+          class="title-logo"
+        />
+      </div>
+      <div class="title">MCP Server with Voice AI Agent Demo</div>
 
-        <div id="wavesurfer-container">
-            <h3 style="margin-top: 16px;text-align: center;">Click the mic button and say something!</h3>
-            <div id="mic"></div>
+      <!-- Examples Section -->
+      <div id="examples-section">
+        <div class="examples-toggle" onclick="toggleExamples()">
+          <span id="examples-icon">▼</span>
+          <span>🔧 What can you ask me?</span>
         </div>
-        <div id="content">
-            <br>
-            <div id="conversation"></div>
+        <div id="examples-content" class="examples-content">
+          <div class="examples-grid">
+            <div class="example-category">
+              <h4>✈️ Flight Information</h4>
+              <ul>
+                <li>"What's the status of flight TK1 on 2024-12-25?"</li>
+                <li>"Show me flights from Istanbul to London tomorrow"</li>
+                <li>"Create a booking link for flights to New York"</li>
+                <li>
+                  "What are the current promotions for international flights?"
+                </li>
+              </ul>
+            </div>
+            <div class="example-category">
+              <h4>🌍 Travel Planning</h4>
+              <ul>
+                <li>"Get me a city guide for Paris"</li>
+                <li>"What are the baggage allowance for my booking?"</li>
+                <li>"Help me find booking information for check-in"</li>
+              </ul>
+            </div>
+            <div class="example-category">
+              <h4>📋 Booking Management</h4>
+              <ul>
+                <li>"Get my booking details for PNR ABC123"</li>
+                <li>"Show me my flight booking information"</li>
+              </ul>
+            </div>
+            <div class="example-category">
+              <h4>👤 Member Services</h4>
+              <ul>
+                <li>"Show me my upcoming flights"</li>
+                <li>"What's my Miles&Smiles member information?"</li>
+                <li>"Check my authentication status"</li>
+                <li>"Show me my expiring miles"</li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div class="gradientback"></div>
+      </div>
+
+      <div id="wavesurfer-container">
+        <h3 id="mic-status-text" style="margin-top: 16px; text-align: center">
+          Click the mic button and say something!
+        </h3>
+        <div id="mic"></div>
+      </div>
+      <div id="content">
+        <br />
+        <div id="conversation"></div>
+      </div>
+      <div class="gradientback"></div>
     </div>
-    <div class="recorder" onclick="toggleRecording()">
-        <img id="mic-button" src="mic_off.png" width="50px">
+
+    <!-- Bottom mic section -->
+    <div class="bottom-mic-section">
+      <div class="mic-container">
+        <div class="recorder" onclick="toggleRecording()">
+          <img id="mic-button" src="mic_off.png" width="50px" />
+        </div>
+      </div>
     </div>
-    </div>
+
     <script src="client.js"></script>
     <script src="waveform.js"></script>
-</body>
-
+  </body>
 </html>
