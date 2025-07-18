@@ -6,7 +6,7 @@ A real-time voice AI assistant that connects to Turkish Airlines services throug
 
 ## Interface
 
-![Turkish Airlines Voice AI Assistant Interface](images/interface.png)
+<img src="images/interface.png" alt="Turkish Airlines Voice AI Assistant Interface" width="600">
 
 ## Motivation
 
