@@ -129,12 +129,30 @@ function handleBotReply(text, audio) {
   const agentMessageDiv = document.createElement("div");
   agentMessageDiv.className = "response agent-response";
   conversation.appendChild(agentMessageDiv);
-  agentMessageDiv.innerHTML = text;
+
+  // Convert URLs to clickable links
+  const linkifiedText = linkifyUrls(text);
+  agentMessageDiv.innerHTML = linkifiedText;
 
   // Scroll to bottom when agent responds
   scrollToBottom();
 
   playAudio(audio);
+}
+
+function linkifyUrls(text) {
+  // Regular expression to detect URLs
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+  return text.replace(urlRegex, function (url) {
+    return (
+      '<a href="' +
+      url +
+      '" target="_blank" rel="noopener noreferrer">' +
+      url +
+      "</a>"
+    );
+  });
 }
 
 function playAudio(audio) {

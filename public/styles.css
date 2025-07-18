@@ -41,6 +41,18 @@ header {
   color: #ffffff;
 }
 
+.agent-response a {
+  color: #03aaff;
+  text-decoration: underline;
+  word-break: break-all;
+  transition: color 0.3s ease;
+}
+
+.agent-response a:hover {
+  color: #07d6ed;
+  text-decoration: underline;
+}
+
 span {
   opacity: 0.1;
 }
