@@ -44,7 +44,6 @@ This demonstrates how to build conversational AI that can:
 ### Requirements
 
 - Python 3.8+
-- Node.js 16+
 
 ### Setup
 
