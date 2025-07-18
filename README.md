@@ -4,6 +4,10 @@
 
 A real-time voice AI assistant that connects to Turkish Airlines services through voice interaction. Users can speak to ask about flights, bookings, and travel information, and get spoken responses back.
 
+## Interface
+
+![Turkish Airlines Voice AI Assistant Interface](images/interface.png)
+
 ## Motivation
 
 Turkish Airlines has introduced their own [Model Context Protocol (MCP) server](https://mcp.turkishtechlab.com/) that provides AI assistants with access to flight information, booking details, and travel services. This project connects that MCP server with a voice AI agent to create a natural conversational experience.
