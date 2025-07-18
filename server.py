@@ -19,7 +19,7 @@ from mcp_use import MCPAgent, MCPClient
 
 import mcp_use
 
-mcp_use.set_debug(2)
+# mcp_use.set_debug(2)
 
 
 # Import prompts configuration
@@ -858,3 +858,4 @@ if __name__ == "__main__":
 
     start_keep_alive()
     socketio_app.run(app, host="0.0.0.0", port=PORT, debug=False)
+    # v3
