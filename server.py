@@ -19,7 +19,7 @@ from mcp_use import MCPAgent, MCPClient
 
 import mcp_use
 
-# mcp_use.set_debug(2)
+mcp_use.set_debug(1)
 
 
 # Import prompts configuration
@@ -35,7 +35,6 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, static_folder="public", static_url_path="")
-app.config["SECRET_KEY"] = "your-secret-key-here"
 socketio_app = SocketIO(
     app, cors_allowed_origins="*", transports=["websocket"], async_mode="threading"
 )
@@ -78,42 +77,8 @@ latest_finalized_word_end = float("inf")
 latest_time_seen = 0.0
 model_final_output_text = ""
 
-# Memory file path
-MEMORY_FILE = "conversation_memory.json"
-
-
-def load_conversation_memory():
-    """Load conversation history from file"""
-    if os.path.exists(MEMORY_FILE):
-        try:
-            with open(MEMORY_FILE, "r") as f:
-                return json.load(f)
-        except:
-            return []
-    return []
-
-
-def save_conversation_memory(memory):
-    """Save conversation history to file"""
-    try:
-        with open(MEMORY_FILE, "w") as f:
-            json.dump(memory, f, indent=2)
-    except Exception as e:
-        print(f"Error saving memory: {e}")
-
-
-def clean_old_memories(memory, days_to_keep=7):
-    """Remove old conversation entries"""
-    cutoff_date = datetime.now() - timedelta(days=days_to_keep)
-    return [
-        entry
-        for entry in memory
-        if datetime.fromisoformat(entry.get("timestamp", "1970-01-01")) > cutoff_date
-    ]
-
-
-# Initialize memory at startup
-conversation_history = load_conversation_memory()
+# Session-only conversation history (no persistent memory)
+conversation_history = []
 
 
 async def initialize_mcp_client():
@@ -274,7 +239,7 @@ def build_context_with_history_and_tools(current_transcript):
     # Add conversation history
     if conversation_history:
         context += "Previous conversation:\n"
-        for exchange in conversation_history[-3:]:  # Only use last 3 exchanges
+        for exchange in conversation_history[-10:]:  # Only use last 10 exchanges
             context += f"User: {exchange['user']}\n"
             context += f"Assistant: {exchange['assistant']}\n\n"
 
@@ -295,7 +260,7 @@ def build_context_with_history(current_transcript):
         return current_transcript
 
     context = "Previous conversation:\n"
-    for exchange in conversation_history[-3:]:  # Only use last 3 exchanges
+    for exchange in conversation_history[-10:]:  # Only use last 10 exchanges
         context += f"User: {exchange['user']}\n"
         context += f"Assistant: {exchange['assistant']}\n\n"
 
@@ -601,9 +566,9 @@ async def mcp_generate_response(transcript):
             }
         )
 
-        # Keep only last 5 exchanges to prevent context from getting too long
-        if len(conversation_history) > 5:
-            conversation_history = conversation_history[-5:]
+        # Keep only last 10 exchanges to prevent context from getting too long
+        if len(conversation_history) > 10:
+            conversation_history = conversation_history[-10:]
 
         print(f"\nAssistant-> {model_final_output_text}")
 
@@ -664,6 +629,7 @@ async def call_mcp_tool(context):
         print("Calling MCP tools with fresh session...")
         print(f"DEBUG: Context being sent to MCP agent: {context[:200]}...")
         result = await tool_agent.run(context)
+        print(f"DEBUG: FULL MCP TOOL RESULT: {result}")
         return str(result)
 
     except Exception as e:
@@ -858,4 +824,4 @@ if __name__ == "__main__":
 
     start_keep_alive()
     socketio_app.run(app, host="0.0.0.0", port=PORT, debug=False)
-    # v3
+    # v4
